@@ -162,11 +162,13 @@ resolve_package_conflicts() {
 
 is_skipped() {
   local package="$1"
-  for skipped in "${SKIPPED_PACKAGES[@]}"; do
-    if [[ "$skipped" == "$package" ]]; then
-      return 0
-    fi
-  done
+  if [[ ${#SKIPPED_PACKAGES[@]} -gt 0 ]]; then
+    for skipped in "${SKIPPED_PACKAGES[@]}"; do
+      if [[ "$skipped" == "$package" ]]; then
+        return 0
+      fi
+    done
+  fi
   return 1
 }
 
