@@ -48,6 +48,22 @@ find_conflicts() {
   done
 }
 
+find_stow_conflicts() {
+  local package="$1"
+  local output
+  output=$(stow --no --target="$HOME" "$package" 2>&1) || true
+
+  if [[ -z "$output" ]]; then
+    return 0
+  fi
+
+  if [[ "$output" == *"existing target is not owned by stow"* ]]; then
+    printf '%s\n' "existing target is not owned by stow"
+  fi
+
+  printf '%s\n' "$output"
+}
+
 backup_conflicts() {
   local package="$1"
   shift
@@ -88,7 +104,10 @@ resolve_package_conflicts() {
     [[ -n "$line" ]] && conflicts+=("$line")
   done < <(find_conflicts "$package")
 
-  if [[ ${#conflicts[@]} -eq 0 ]]; then
+  local stow_output
+  stow_output=$(find_stow_conflicts "$package")
+
+  if [[ ${#conflicts[@]} -eq 0 && -z "$stow_output" ]]; then
     echo "Error: stow conflict detected for package '$package' but no specific conflicts could be identified." >&2
     echo "Resolve existing files manually or remove them before running this script." >&2
     exit 1
@@ -96,9 +115,14 @@ resolve_package_conflicts() {
 
   echo ""
   echo "Conflicts detected for package '$package':"
-  for conflict in "${conflicts[@]}"; do
-    echo "  - $HOME/$conflict"
-  done
+  if [[ ${#conflicts[@]} -gt 0 ]]; then
+    for conflict in "${conflicts[@]}"; do
+      echo "  - $HOME/$conflict"
+    done
+  fi
+  if [[ -n "$stow_output" ]]; then
+    echo "$stow_output" | sed 's/^/  /'
+  fi
 
   while true; do
     echo ""
@@ -111,7 +135,11 @@ resolve_package_conflicts() {
 
     case "$choice" in
       [Bb])
-        backup_conflicts "$package" "${conflicts[@]}"
+        if [[ ${#conflicts[@]} -gt 0 ]]; then
+          backup_conflicts "$package" "${conflicts[@]}"
+        else
+          echo "  No specific files to back up. Stow will handle the conflicting directory."
+        fi
         return 0
         ;;
       [Oo])
@@ -194,6 +222,18 @@ for package in "${PACKAGES[@]}"; do
     echo "  - $package"
   fi
 done
+
+if ! is_skipped "iterm2"; then
+  ITERM2_DYNAMIC_PROFILES_DIR="$HOME/.config/iterm2/AppSupport/DynamicProfiles"
+  ITERM2_SOURCE_PROFILE="$DOTFILES_DIR/iterm2/.config/iterm2/DynamicProfile-default.json"
+
+  if [[ -f "$ITERM2_SOURCE_PROFILE" ]]; then
+    echo "Installing iTerm2 dynamic profile..."
+    mkdir -p "$ITERM2_DYNAMIC_PROFILES_DIR"
+    cp -f "$ITERM2_SOURCE_PROFILE" "$ITERM2_DYNAMIC_PROFILES_DIR/default.json"
+    echo "  - $ITERM2_DYNAMIC_PROFILES_DIR/default.json"
+  fi
+fi
 
 echo ""
 echo "Done. Next steps:"

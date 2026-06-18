@@ -49,7 +49,7 @@ machine-specific credentials belong in untracked `*.local` files. See the
 
 5. Configure iTerm2 to load Dynamic Profiles from the directory shown in
    **Preferences → Profiles → Other Actions... → Save Current Settings as a Folder**.
-   The profile is stowed to `~/.config/iterm2/AppSupport/DynamicProfiles/`.
+   The profile is copied to `~/.config/iterm2/AppSupport/DynamicProfiles/` during bootstrap.
 
 ## Adding a new tool
 
