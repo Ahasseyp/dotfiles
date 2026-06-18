@@ -65,6 +65,7 @@ Flags:
 
 - `dotfiles-update --check` — print local vs. remote version
 - `dotfiles-update --force` — re-run bootstrap even if already up to date
+- `dotfiles-update --verbose` — show full bootstrap output
 
 When `dotfiles-update` detects uncommitted changes in `~/dotfiles`, it prompts you to stash, discard tracked changes, or abort.
 

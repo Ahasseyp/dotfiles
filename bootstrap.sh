@@ -7,6 +7,19 @@ PACKAGES=(zsh git ssh nvim iterm2)
 BIN_DIR="${HOME}/.local/bin"
 SKIPPED_PACKAGES=()
 
+QUIET=false
+
+for arg in "${@:-}"; do
+  case "$arg" in
+    --quiet) QUIET=true ;;
+    -q) QUIET=true ;;
+    *) ;;
+  esac
+done
+
+info() { if ! $QUIET; then echo "$@"; fi }
+warn() { echo "$@" >&2; }
+
 CUSTOM_PLUGINS=(
   "https://github.com/zsh-users/zsh-autosuggestions"
 )
@@ -17,8 +30,8 @@ CUSTOM_THEMES=(
 cd "$DOTFILES_DIR"
 
 if ! command -v stow >/dev/null 2>&1; then
-  echo "Error: GNU Stow is required but not installed." >&2
-  echo "Install it with: brew install stow" >&2
+  warn "Error: GNU Stow is required but not installed."
+  warn "Install it with: brew install stow"
   exit 1
 fi
 
@@ -78,11 +91,11 @@ backup_conflicts() {
     if [[ -e "$target" || -L "$target" ]]; then
       mkdir -p "$(dirname "$backup_path")"
       mv "$target" "$backup_path"
-      echo "  backed up: ~/$relative"
+      info "  backed up: ~/$relative"
     fi
   done
 
-  echo "  backup location: $backup_dir"
+  info "  backup location: $backup_dir"
 }
 
 override_conflicts() {
@@ -92,7 +105,7 @@ override_conflicts() {
     local target="$HOME/$relative"
     if [[ -e "$target" || -L "$target" ]]; then
       rm -rf "$target"
-      echo "  removed: ~/$relative"
+      info "  removed: ~/$relative"
     fi
   done
 }
@@ -109,8 +122,8 @@ resolve_package_conflicts() {
   stow_output=$(find_stow_conflicts "$package")
 
   if [[ ${#conflicts[@]} -eq 0 && -z "$stow_output" ]]; then
-    echo "Error: stow conflict detected for package '$package' but no specific conflicts could be identified." >&2
-    echo "Resolve existing files manually or remove them before running this script." >&2
+    warn "Error: stow conflict detected for package '$package' but no specific conflicts could be identified."
+    warn "Resolve existing files manually or remove them before running this script."
     exit 1
   fi
 
@@ -151,11 +164,11 @@ resolve_package_conflicts() {
         return 1
         ;;
       [Aa])
-        echo "Aborted by user." >&2
+        warn "Aborted by user."
         exit 1
         ;;
       *)
-        echo "Invalid choice: $choice. Please enter b, o, s, or a." >&2
+        warn "Invalid choice: $choice. Please enter b, o, s, or a."
         ;;
     esac
   done
@@ -174,10 +187,14 @@ is_skipped() {
 }
 
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-  echo "Installing OhMyZsh..."
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  info "Installing OhMyZsh..."
+  if $QUIET; then
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended >/dev/null 2>&1
+  else
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  fi
 else
-  echo "OhMyZsh already installed."
+  info "OhMyZsh already installed."
 fi
 
 ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
@@ -186,10 +203,14 @@ for repo in "${CUSTOM_PLUGINS[@]}"; do
   name="$(basename "$repo")"
   target="$ZSH_CUSTOM/plugins/$name"
   if [[ ! -d "$target" ]]; then
-    echo "Installing custom plugin: $name"
-    git clone --depth 1 "$repo" "$target"
+    info "Installing custom plugin: $name"
+    if $QUIET; then
+      git clone -q --depth 1 "$repo" "$target"
+    else
+      git clone --depth 1 "$repo" "$target"
+    fi
   else
-    echo "Custom plugin already installed: $name"
+    info "Custom plugin already installed: $name"
   fi
 done
 
@@ -197,15 +218,19 @@ for repo in "${CUSTOM_THEMES[@]}"; do
   name="$(basename "$repo")"
   target="$ZSH_CUSTOM/themes/$name"
   if [[ ! -d "$target" ]]; then
-    echo "Installing custom theme: $name"
-    git clone --depth 1 "$repo" "$target"
+    info "Installing custom theme: $name"
+    if $QUIET; then
+      git clone -q --depth 1 "$repo" "$target"
+    else
+      git clone --depth 1 "$repo" "$target"
+    fi
   else
-    echo "Custom theme already installed: $name"
+    info "Custom theme already installed: $name"
   fi
 done
 
-echo ""
-echo "Checking for stow conflicts..."
+info ""
+info "Checking for stow conflicts..."
 for package in "${PACKAGES[@]}"; do
   if [[ ! -d "$package" ]]; then
     continue
@@ -214,20 +239,20 @@ for package in "${PACKAGES[@]}"; do
   if ! stow --no --target="$HOME" "$package" >/dev/null 2>&1; then
     if ! resolve_package_conflicts "$package"; then
       SKIPPED_PACKAGES+=("$package")
-      echo "  Skipping package '$package'."
+      info "  Skipping package '$package'."
     fi
   fi
 done
 
-echo ""
-echo "Stowing packages..."
+info ""
+info "Stowing packages..."
 for package in "${PACKAGES[@]}"; do
   if [[ -d "$package" ]] && ! is_skipped "$package"; then
-    if ! stow --target="$HOME" --restow "$package"; then
-      echo "Error: failed to stow package '$package'" >&2
+    if ! stow --target="$HOME" --restow "$package" >/dev/null 2>&1; then
+      warn "Error: failed to stow package '$package'"
       exit 1
     fi
-    echo "  - $package"
+    info "  - $package"
   fi
 done
 
@@ -236,29 +261,29 @@ if ! is_skipped "iterm2"; then
   ITERM2_SOURCE_PROFILE="$DOTFILES_DIR/iterm2/.config/iterm2/DynamicProfile-default.json"
 
   if [[ -f "$ITERM2_SOURCE_PROFILE" ]]; then
-    echo "Installing iTerm2 dynamic profile..."
+    info "Installing iTerm2 dynamic profile..."
     mkdir -p "$ITERM2_DYNAMIC_PROFILES_DIR"
     cp -f "$ITERM2_SOURCE_PROFILE" "$ITERM2_DYNAMIC_PROFILES_DIR/default.json"
-    echo "  - $ITERM2_DYNAMIC_PROFILES_DIR/default.json"
+    info "  - $ITERM2_DYNAMIC_PROFILES_DIR/default.json"
   fi
 fi
 
-echo ""
-echo "Installing dotfiles-update..."
+info ""
+info "Installing dotfiles-update..."
 if [[ -f "${DOTFILES_DIR}/bin/dotfiles-update" ]]; then
   mkdir -p "$BIN_DIR"
   ln -sf "${DOTFILES_DIR}/bin/dotfiles-update" "${BIN_DIR}/dotfiles-update"
   chmod +x "${BIN_DIR}/dotfiles-update"
-  echo "  installed ${BIN_DIR}/dotfiles-update -> ${DOTFILES_DIR}/bin/dotfiles-update"
+  info "  installed ${BIN_DIR}/dotfiles-update -> ${DOTFILES_DIR}/bin/dotfiles-update"
 else
-  echo "  Warning: dotfiles-update script not found at ${DOTFILES_DIR}/bin/dotfiles-update" >&2
+  warn "  Warning: dotfiles-update script not found at ${DOTFILES_DIR}/bin/dotfiles-update"
 fi
 
-echo ""
-echo "Done. Next steps:"
-echo "  1. Restart your terminal or run: source ~/.zshrc"
-echo "  2. Copy any needed local overrides:"
-echo "     cp ~/.zshrc.local.example ~/.zshrc.local"
-echo "     cp ~/.zshenv.local.example ~/.zshenv.local"
-echo "     cp ~/.gitconfig.local.example ~/.gitconfig.local"
-echo "     cp ~/.ssh/config.local.example ~/.ssh/config.local"
+info ""
+info "Done. Next steps:"
+info "  1. Restart your terminal or run: source ~/.zshrc"
+info "  2. Copy any needed local overrides:"
+info "     cp ~/.zshrc.local.example ~/.zshrc.local"
+info "     cp ~/.zshenv.local.example ~/.zshenv.local"
+info "     cp ~/.gitconfig.local.example ~/.gitconfig.local"
+info "     cp ~/.ssh/config.local.example ~/.ssh/config.local"

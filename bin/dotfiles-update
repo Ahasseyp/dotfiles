@@ -49,21 +49,25 @@ green() { printf '\033[32m%s\033[0m\n' "$*"; }
 bold()  { printf '\033[1m%s\033[0m\n' "$*"; }
 
 usage() {
-  echo "Usage: dotfiles-update [--check | --force]"
+  echo "Usage: dotfiles-update [--check | --force | --verbose]"
   echo ""
   echo "  (no flags)  check for a newer release and update if found"
   echo "  --check     print version status and exit (0 = up to date, 1 = update available)"
   echo "  --force     run bootstrap even if already on the latest release"
+  echo "  --verbose   show full bootstrap output"
   exit 0
 }
 
 check_only=false
 force=false
+verbose=false
+bootstrap_args=()
 
 for arg in "${@:-}"; do
   case "$arg" in
     --check) check_only=true ;;
     --force) force=true ;;
+    --verbose) verbose=true; bootstrap_args+=("--verbose") ;;
     -h|--help) usage ;;
     *) ;;
   esac
@@ -139,10 +143,14 @@ if [[ -n "$(git status --porcelain 2>/dev/null || true)" ]]; then
 fi
 
 if ! $force; then
-  git fetch --tags origin
-  git checkout "tags/v${remote_version}" -B "release/v${remote_version}"
+  git fetch -q --tags origin
+  git checkout -q "tags/v${remote_version}" -B "release/v${remote_version}"
 fi
 
-bash "${DOTFILES_DIR}/bootstrap.sh"
+if $verbose; then
+  bash "${DOTFILES_DIR}/bootstrap.sh" --verbose
+else
+  bash "${DOTFILES_DIR}/bootstrap.sh" --quiet
+fi
 
 green "Done."
