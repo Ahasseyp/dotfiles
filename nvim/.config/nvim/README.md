@@ -5,16 +5,18 @@ Personal Neovim config built on [lazy.nvim](https://github.com/folke/lazy.nvim),
 ## Requirements
 
 **Required**
+
 - Neovim >= 0.12
 - `git`
 - A C compiler (`clang` or `gcc`) — for Treesitter parsers
-- `tree-sitter` CLI — required by `nvim-treesitter` on its `main` branch
+- `tree-sitter` CLI (`tree-sitter-cli` on Homebrew) — required by `nvim-treesitter` on its `main` branch
 - `ripgrep` — Telescope live grep
 - `fd` — Telescope find files
 - Node.js + npm — Mason installs many JS-based LSPs and formatters
 - A [Nerd Font](https://www.nerdfonts.com/) — required by `nvim-web-devicons`, `lualine`, `bufferline`, and `neo-tree`
 
 **Optional**
+
 - `lazygit` CLI — for `lazygit.nvim`
 - `pyenv` + Python 3 — `options.lua` points `python3_host_prog` at `$HOME/.pyenv/shims/python`
 - `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY` — for `avante.nvim`
