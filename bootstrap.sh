@@ -4,6 +4,7 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGES=(zsh git ssh nvim iterm2 ohmyzsh)
+SKIPPED_PACKAGES=()
 
 CUSTOM_PLUGINS=(
   "https://github.com/zsh-users/zsh-autosuggestions"
@@ -20,15 +21,138 @@ if ! command -v stow >/dev/null 2>&1; then
   exit 1
 fi
 
+find_conflicts() {
+  local package="$1"
+
+  find "$package" -mindepth 1 -print0 | while IFS= read -r -d '' source_path; do
+    local relative="${source_path#$package/}"
+    local target="$HOME/$relative"
+
+    if [[ ! -e "$target" && ! -L "$target" ]]; then
+      continue
+    fi
+
+    if [[ -L "$target" ]]; then
+      local link_target
+      link_target=$(readlink "$target") || true
+      if [[ "$link_target" == "$DOTFILES_DIR/$source_path" ]]; then
+        continue
+      fi
+    fi
+
+    if [[ -d "$source_path" && -d "$target" ]]; then
+      continue
+    fi
+
+    printf '%s\n' "$relative"
+  done
+}
+
+backup_conflicts() {
+  local package="$1"
+  shift
+  local backup_dir="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)/$package"
+
+  mkdir -p "$backup_dir"
+
+  for relative in "$@"; do
+    local target="$HOME/$relative"
+    local backup_path="$backup_dir/$relative"
+    if [[ -e "$target" || -L "$target" ]]; then
+      mkdir -p "$(dirname "$backup_path")"
+      mv "$target" "$backup_path"
+      echo "  backed up: ~/$relative"
+    fi
+  done
+
+  echo "  backup location: $backup_dir"
+}
+
+override_conflicts() {
+  shift
+
+  for relative in "$@"; do
+    local target="$HOME/$relative"
+    if [[ -e "$target" || -L "$target" ]]; then
+      rm -rf "$target"
+      echo "  removed: ~/$relative"
+    fi
+  done
+}
+
+resolve_package_conflicts() {
+  local package="$1"
+  local conflicts=()
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] && conflicts+=("$line")
+  done < <(find_conflicts "$package")
+
+  if [[ ${#conflicts[@]} -eq 0 ]]; then
+    echo "Error: stow conflict detected for package '$package' but no specific conflicts could be identified." >&2
+    echo "Resolve existing files manually or remove them before running this script." >&2
+    exit 1
+  fi
+
+  echo ""
+  echo "Conflicts detected for package '$package':"
+  for conflict in "${conflicts[@]}"; do
+    echo "  - $HOME/$conflict"
+  done
+
+  while true; do
+    echo ""
+    echo "Choose an action:"
+    echo "  [B]ackup existing files, then stow"
+    echo "  [O]verride (delete) existing files, then stow"
+    echo "  [S]kip this package"
+    echo "  [A]bort"
+    read -rp "Choice [b/o/s/a]: " choice
+
+    case "$choice" in
+      [Bb])
+        backup_conflicts "$package" "${conflicts[@]}"
+        return 0
+        ;;
+      [Oo])
+        override_conflicts "$package" "${conflicts[@]}"
+        return 0
+        ;;
+      [Ss])
+        return 1
+        ;;
+      [Aa])
+        echo "Aborted by user." >&2
+        exit 1
+        ;;
+      *)
+        echo "Invalid choice: $choice. Please enter b, o, s, or a." >&2
+        ;;
+    esac
+  done
+}
+
+is_skipped() {
+  local package="$1"
+  for skipped in "${SKIPPED_PACKAGES[@]}"; do
+    if [[ "$skipped" == "$package" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 echo "Checking for stow conflicts..."
 for package in "${PACKAGES[@]}"; do
   if [[ ! -d "$package" ]]; then
     continue
   fi
+
   if ! stow --no --target="$HOME" "$package" >/dev/null 2>&1; then
-    echo "Error: stow conflict detected for package '$package'." >&2
-    echo "Resolve existing files or remove them before running this script." >&2
-    exit 1
+    if ! resolve_package_conflicts "$package"; then
+      SKIPPED_PACKAGES+=("$package")
+      echo "  Skipping package '$package'."
+    fi
   fi
 done
 
@@ -65,7 +189,7 @@ done
 
 echo "Stowing packages..."
 for package in "${PACKAGES[@]}"; do
-  if [[ -d "$package" ]]; then
+  if [[ -d "$package" ]] && ! is_skipped "$package"; then
     stow --target="$HOME" --restow "$package"
     echo "  - $package"
   fi
