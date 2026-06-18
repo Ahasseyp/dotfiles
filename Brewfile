@@ -1,0 +1,21 @@
+tap "homebrew/bundle"
+
+brew "stow"
+brew "zsh"
+brew "neovim"
+brew "git"
+brew "fzf"
+brew "ripgrep"
+brew "fd"
+brew "lazygit"
+brew "nvm"
+brew "pyenv"
+brew "gh"
+brew "git-lfs"
+brew "cloudflared"
+
+cask "postman"
+
+cask "iterm2"
+cask "1password"
+cask "1password-cli"
