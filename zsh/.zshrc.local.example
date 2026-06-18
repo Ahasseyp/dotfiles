@@ -1,0 +1,12 @@
+# Machine-specific zsh configuration
+# Copy this file to ~/.zshrc.local and fill in values for the current machine.
+
+# Work-specific paths and tokens
+# export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
+# export PATH="$PATH:$HOME/Documents/paragon/dev-utils/bin"
+# export NODE_AUTH_TOKEN="ghp_..."
+# export CI_NPM_AUTH_TOKEN_READONLY="$NODE_AUTH_TOKEN"
+
+# Work-specific aliases
+# alias paragon="cd $HOME/Documents/paragon/"
+# alias playts="cd $HOME/Documents/playgrounds/ts/"

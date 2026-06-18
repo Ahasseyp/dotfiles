@@ -1,0 +1,12 @@
+alias config="cd $HOME/.config"
+alias vimconfig="cd $HOME/.config/nvim && nvim"
+alias zshconfig="nvim $HOME/.zshrc"
+alias zshalias="nvim $HOME/.zshalias"
+alias zshenv="nvim $HOME/.zshenv"
+alias personal="cd $HOME/Documents/personal/"
+alias play="cd $HOME/Documents/playgrounds/"
+alias playts="cd $HOME/Documents/playgrounds/ts/"
+alias paragon="cd $HOME/Documents/paragon/"
+alias gcwip='git commit --no-verify -m "WIP"'
+alias cbranch='git rev-parse --abbrev-ref HEAD | pbcopy'
+alias pmstop='pm2 stop all && pm2 del all'

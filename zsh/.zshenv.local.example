@@ -1,0 +1,12 @@
+# Machine-specific environment variables
+# Copy this file to ~/.zshenv.local and fill in values for the current machine.
+
+# used for installing private packages
+# export GITHUB_PERSONAL_TOKEN="ghp_..."
+
+# used for Redis Cluster
+# export REDIS_CLUSTER_IP=0.0.0.0
+
+# API keys
+# export OPENAI_API_KEY="sk-..."
+# export AVANTE_ANTHROPIC_API_KEY="sk-ant-..."
