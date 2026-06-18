@@ -8,6 +8,7 @@ Personal Neovim config built on [lazy.nvim](https://github.com/folke/lazy.nvim),
 - Neovim >= 0.12
 - `git`
 - A C compiler (`clang` or `gcc`) — for Treesitter parsers
+- `tree-sitter` CLI — required by `nvim-treesitter` on its `main` branch
 - `ripgrep` — Telescope live grep
 - `fd` — Telescope find files
 - Node.js + npm — Mason installs many JS-based LSPs and formatters
