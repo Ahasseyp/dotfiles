@@ -20,13 +20,16 @@ Trigger when the user has changes they want to publish.
    - `BREAKING CHANGE:` or type with `!:` → major
 4. Create branch `feat/<description>` with spaces replaced by hyphens.
 5. Stage and commit all changes using the conventional commit message.
-6. Bump `VERSION` with `.agents/skills/publish-changes/scripts/bump-version.sh <type>`.
-7. Stage `VERSION` and commit with `chore(release): bump version to <new-version>`.
-8. Push the branch with `git push -u origin <branch>`.
-9. Build the PR body from `.github/pull_request_template.md`, filling in the sections with a concise summary of the changes, then open the PR:
-   ```bash
-   gh pr create --title "<commit-subject>" --body "<filled-pr-body>"
-   ```
+7. Bump `VERSION` **only once per PR** with `.agents/skills/publish-changes/scripts/bump-version.sh <type>`.
+8. Stage `VERSION` and commit with `chore(release): bump version to <new-version>`.
+9. Update `README.md` if the changes affect install steps, supported tools, or release workflow.
+10. Push the branch with `git push -u origin <branch>`.
+11. Build the PR body from `.github/pull_request_template.md`, filling in the sections with a concise summary of the changes, then write it to a temporary file and open the PR:
+    ```bash
+    gh pr create --title "<commit-subject>" --body-file /tmp/pr-body.md
+    ```
+
+    Construct the file contents using actual newlines, not `\n` escape sequences.
 
 ## Bump script
 
