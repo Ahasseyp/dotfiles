@@ -1,6 +1,8 @@
 tap "homebrew/bundle"
+tap "anomalyco/tap"
 
 brew "stow"
+brew "opencode"
 brew "zsh"
 brew "neovim"
 brew "git"
