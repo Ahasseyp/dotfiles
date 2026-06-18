@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
+VERSION_FILE="${DOTFILES_DIR}/VERSION"
+REPO="Ahasseyp/dotfiles"
+API_URL="https://api.github.com/repos/${REPO}/releases/latest"
+BIN_DIR="${HOME}/.local/bin"
+
+red()   { printf '\033[31m%s\033[0m\n' "$*"; }
+green() { printf '\033[32m%s\033[0m\n' "$*"; }
+bold()  { printf '\033[1m%s\033[0m\n' "$*"; }
+
+usage() {
+  echo "Usage: dotfiles-update [--check | --force]"
+  echo ""
+  echo "  (no flags)  check for a newer release and update if found"
+  echo "  --check     print version status and exit (0 = up to date, 1 = update available)"
+  echo "  --force     run bootstrap even if already on the latest release"
+  exit 0
+}
+
+check_only=false
+force=false
+
+for arg in "${@:-}"; do
+  case "$arg" in
+    --check) check_only=true ;;
+    --force) force=true ;;
+    -h|--help) usage ;;
+    *) ;;
+  esac
+done
+
+local_version=$(cat "$VERSION_FILE" 2>/dev/null | tr -d '[:space:]' || echo "0.0.0")
+
+remote_version=$(curl -fsSL --max-time 10 "$API_URL" 2>/dev/null \
+  | grep '"tag_name"' | head -1 \
+  | sed 's/.*"tag_name": *"v\{0,1\}\([^"]*\)".*/\1/' || true)
+
+if [[ -z "$remote_version" ]]; then
+  red "Could not find a latest release for Ahasseyp/dotfiles."
+  echo "If this is the first release, create it on GitHub and try again."
+  exit 1
+fi
+
+if $check_only; then
+  if [[ "$remote_version" == "$local_version" ]]; then
+    green "dotfiles is up to date ($local_version)."
+    exit 0
+  else
+    echo "Update available: $local_version → $remote_version"
+    exit 1
+  fi
+fi
+
+if [[ "$remote_version" == "$local_version" ]] && ! $force; then
+  green "dotfiles is already up to date ($local_version)."
+  exit 0
+fi
+
+if $force; then
+  bold "Re-running dotfiles bootstrap ($local_version)..."
+else
+  bold "Updating dotfiles $local_version → $remote_version..."
+fi
+
+cd "$DOTFILES_DIR"
+
+if [[ -n "$(git status --porcelain 2>/dev/null || true)" ]]; then
+  echo ""
+  echo "Your dotfiles repo has uncommitted changes:"
+  git status --short
+  echo ""
+  echo "Choose an action:"
+  echo "  [s] stash changes and continue"
+  echo "  [d] discard tracked changes and continue"
+  echo "  [a] abort"
+
+  while true; do
+    read -rp "Choice [s/d/a]: " choice
+    case "$choice" in
+      [Ss])
+        git stash push -u -m "dotfiles-update auto-stash before v${remote_version}"
+        echo "  Changes stashed."
+        break
+        ;;
+      [Dd])
+        git checkout -- .
+        echo "  Tracked changes discarded."
+        break
+        ;;
+      [Aa])
+        echo "Aborted."
+        exit 0
+        ;;
+      *)
+        echo "Invalid choice: $choice. Please enter s, d, or a." >&2
+        ;;
+    esac
+  done
+fi
+
+if ! $force; then
+  git fetch --tags origin
+  git checkout "tags/v${remote_version}" -B "release/v${remote_version}"
+fi
+
+bash "${DOTFILES_DIR}/bootstrap.sh"
+
+green "Done."

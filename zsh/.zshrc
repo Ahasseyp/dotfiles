@@ -103,5 +103,46 @@ esac
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/go/bin:$PATH"
 
+# Daily dotfiles update check
+_dotfiles_check_for_updates() {
+  local dotfiles_dir="$HOME/dotfiles"
+  local version_file="${dotfiles_dir}/VERSION"
+  local last_check_file="${HOME}/.local/share/dotfiles/last_update_check"
+  local api_url="https://api.github.com/repos/Ahasseyp/dotfiles/releases/latest"
+
+  if [[ ! -f "$version_file" ]]; then
+    return 0
+  fi
+
+  mkdir -p "$(dirname "$last_check_file")"
+
+  local now
+  now=$(date +%s)
+  local last=0
+  if [[ -f "$last_check_file" ]]; then
+    last=$(cat "$last_check_file" 2>/dev/null || echo 0)
+  fi
+
+  if (( now - last < 86400 )); then
+    return 0
+  fi
+
+  echo "$now" > "$last_check_file"
+
+  (
+    local local_version
+    local_version=$(tr -d '[:space:]' < "$version_file" 2>/dev/null || echo "")
+    local remote_version
+    remote_version=$(curl -fsSL --max-time 3 "$api_url" 2>/dev/null \
+      | grep '"tag_name"' | head -1 \
+      | sed 's/.*"tag_name": *"v\{0,1\}\([^"]*\)".*/\1/' || true)
+
+    if [[ -n "$local_version" && -n "$remote_version" && "$remote_version" != "$local_version" ]]; then
+      echo "dotfiles update available: $local_version → $remote_version. Run: dotfiles-update"
+    fi
+  ) &!
+}
+_dotfiles_check_for_updates
+
 # Load local overrides if present
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local

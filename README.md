@@ -51,6 +51,45 @@ machine-specific credentials belong in untracked `*.local` files. See the
    **Preferences → Profiles → Other Actions... → Save Current Settings as a Folder**.
    The profile is copied to `~/.config/iterm2/AppSupport/DynamicProfiles/` during bootstrap.
 
+## Update
+
+Once installed, your symlinks point into `~/dotfiles`, so existing files update automatically when the repo is pulled.
+
+To update to the latest release:
+
+```sh
+dotfiles-update
+```
+
+Flags:
+
+- `dotfiles-update --check` — print local vs. remote version
+- `dotfiles-update --force` — re-run bootstrap even if already up to date
+
+When `dotfiles-update` detects uncommitted changes in `~/dotfiles`, it prompts you to stash, discard tracked changes, or abort.
+
+A daily check runs when a new zsh shell starts. If a newer release exists, it prints:
+
+```
+dotfiles update available: 1.0.0 → 1.1.0. Run: dotfiles-update
+```
+
+## Releasing changes
+
+This repo follows a release workflow similar to [gswitch](https://github.com/Ahasseyp/gswitch).
+
+1. Make and commit your changes on a branch.
+2. Bump the version in `VERSION` (e.g., `1.1.0`).
+3. Commit the version bump, merge to `main`, and tag:
+
+   ```sh
+   git tag -a v1.1.0 -m "Release v1.1.0"
+   git push origin v1.1.0
+   ```
+
+4. Create a GitHub release from the tag.
+5. On each machine, the daily check warns the user, and they run `dotfiles-update` to apply the release.
+
 ## Adding a new tool
 
 1. Create a top-level directory that mirrors the home directory layout.

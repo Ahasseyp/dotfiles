@@ -4,6 +4,7 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGES=(zsh git ssh nvim iterm2)
+BIN_DIR="${HOME}/.local/bin"
 SKIPPED_PACKAGES=()
 
 CUSTOM_PLUGINS=(
@@ -240,6 +241,17 @@ if ! is_skipped "iterm2"; then
     cp -f "$ITERM2_SOURCE_PROFILE" "$ITERM2_DYNAMIC_PROFILES_DIR/default.json"
     echo "  - $ITERM2_DYNAMIC_PROFILES_DIR/default.json"
   fi
+fi
+
+echo ""
+echo "Installing dotfiles-update..."
+if [[ -f "${DOTFILES_DIR}/bin/dotfiles-update" ]]; then
+  mkdir -p "$BIN_DIR"
+  cp "${DOTFILES_DIR}/bin/dotfiles-update" "${BIN_DIR}/dotfiles-update"
+  chmod +x "${BIN_DIR}/dotfiles-update"
+  echo "  installed ${BIN_DIR}/dotfiles-update"
+else
+  echo "  Warning: dotfiles-update script not found at ${DOTFILES_DIR}/bin/dotfiles-update" >&2
 fi
 
 echo ""
