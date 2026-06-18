@@ -3,7 +3,7 @@
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PACKAGES=(zsh git ssh nvim iterm2 ohmyzsh)
+PACKAGES=(zsh git ssh nvim iterm2)
 SKIPPED_PACKAGES=()
 
 CUSTOM_PLUGINS=(
@@ -170,20 +170,6 @@ is_skipped() {
   return 1
 }
 
-echo "Checking for stow conflicts..."
-for package in "${PACKAGES[@]}"; do
-  if [[ ! -d "$package" ]]; then
-    continue
-  fi
-
-  if ! stow --no --target="$HOME" "$package" >/dev/null 2>&1; then
-    if ! resolve_package_conflicts "$package"; then
-      SKIPPED_PACKAGES+=("$package")
-      echo "  Skipping package '$package'."
-    fi
-  fi
-done
-
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
   echo "Installing OhMyZsh..."
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
@@ -215,10 +201,29 @@ for repo in "${CUSTOM_THEMES[@]}"; do
   fi
 done
 
+echo ""
+echo "Checking for stow conflicts..."
+for package in "${PACKAGES[@]}"; do
+  if [[ ! -d "$package" ]]; then
+    continue
+  fi
+
+  if ! stow --no --target="$HOME" "$package" >/dev/null 2>&1; then
+    if ! resolve_package_conflicts "$package"; then
+      SKIPPED_PACKAGES+=("$package")
+      echo "  Skipping package '$package'."
+    fi
+  fi
+done
+
+echo ""
 echo "Stowing packages..."
 for package in "${PACKAGES[@]}"; do
   if [[ -d "$package" ]] && ! is_skipped "$package"; then
-    stow --target="$HOME" --restow "$package"
+    if ! stow --target="$HOME" --restow "$package"; then
+      echo "Error: failed to stow package '$package'" >&2
+      exit 1
+    fi
     echo "  - $package"
   fi
 done
