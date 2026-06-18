@@ -247,9 +247,9 @@ echo ""
 echo "Installing dotfiles-update..."
 if [[ -f "${DOTFILES_DIR}/bin/dotfiles-update" ]]; then
   mkdir -p "$BIN_DIR"
-  cp "${DOTFILES_DIR}/bin/dotfiles-update" "${BIN_DIR}/dotfiles-update"
+  ln -sf "${DOTFILES_DIR}/bin/dotfiles-update" "${BIN_DIR}/dotfiles-update"
   chmod +x "${BIN_DIR}/dotfiles-update"
-  echo "  installed ${BIN_DIR}/dotfiles-update"
+  echo "  installed ${BIN_DIR}/dotfiles-update -> ${DOTFILES_DIR}/bin/dotfiles-update"
 else
   echo "  Warning: dotfiles-update script not found at ${DOTFILES_DIR}/bin/dotfiles-update" >&2
 fi
