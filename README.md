@@ -78,17 +78,19 @@ dotfiles update available: 1.0.0 → 1.1.0. Run: dotfiles-update
 
 This repo follows a release workflow similar to [gswitch](https://github.com/Ahasseyp/gswitch).
 
-1. Make and commit your changes on a branch.
-2. Bump the version in `VERSION` (e.g., `1.1.0`).
-3. Commit the version bump, merge to `main`, and tag:
+1. Create a feature branch from `main`:
 
    ```sh
-   git tag -a v1.1.0 -m "Release v1.1.0"
-   git push origin v1.1.0
+   git checkout -b feat/my-change
    ```
 
-4. Create a GitHub release from the tag.
-5. On each machine, the daily check warns the user, and they run `dotfiles-update` to apply the release.
+2. Make your changes and commit them.
+3. Bump the version in `VERSION` (e.g., `1.1.0`) and commit the bump.
+4. Open a pull request to `main`.
+5. Merge the pull request.
+6. A GitHub Action reads `VERSION` from `main` and automatically creates a release at `v<X.Y.Z>`.
+
+On each machine, the daily zsh check warns the user when a newer release exists, and they run `dotfiles-update` to apply it.
 
 ## Adding a new tool
 
