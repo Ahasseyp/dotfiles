@@ -2,7 +2,26 @@
 
 set -euo pipefail
 
-DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
+DOTFILES_DIR="${DOTFILES_DIR:-}"
+
+if [[ -z "$DOTFILES_DIR" ]]; then
+  # Try to locate the dotfiles repo from this script's location.
+  script_path="${BASH_SOURCE[0]}"
+  if [[ -L "$script_path" ]]; then
+    script_path=$(readlink "$script_path" || true)
+  fi
+  script_dir=$(cd "$(dirname "$script_path")" && pwd)
+
+  if [[ "$(basename "$script_dir")" == "bin" ]]; then
+    DOTFILES_DIR=$(cd "$(dirname "$script_dir")" && pwd)
+  elif [[ -d "$HOME/dotfiles" ]]; then
+    DOTFILES_DIR="$HOME/dotfiles"
+  else
+    red "Could not locate the dotfiles repo. Set DOTFILES_DIR or reinstall."
+    exit 1
+  fi
+fi
+
 VERSION_FILE="${DOTFILES_DIR}/VERSION"
 REPO="Ahasseyp/dotfiles"
 API_URL="https://api.github.com/repos/${REPO}/releases/latest"
