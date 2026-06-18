@@ -1,0 +1,16 @@
+{
+  "Profiles": [
+    {
+      "Name": "Default",
+      "Guid": "default-profile-0000-0000-0000-000000000000",
+      "Default": true,
+      "Columns": 120,
+      "Rows": 35,
+      "Custom Directory": "No",
+      "Working Directory": "/Users/USER",
+      "Use Non-ASCII Font": false,
+      "Non Ascii Font": "Monaco 12",
+      "Normal Font": "JetBrainsMonoNFM-Regular 13"
+    }
+  ]
+}
