@@ -30,8 +30,19 @@ bindkey '^ ' autosuggest-accept
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+# Load nvm from a manual install or from Homebrew
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  \. "$NVM_DIR/nvm.sh"
+elif [ -s "/opt/homebrew/opt/nvm/nvm.sh" ]; then
+  \. "/opt/homebrew/opt/nvm/nvm.sh"
+fi
+
+if [ -s "$NVM_DIR/bash_completion" ]; then
+  \. "$NVM_DIR/bash_completion"
+elif [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ]; then
+  \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+fi
 
 # bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
@@ -57,6 +68,10 @@ docker-super-clean() {
 
 autoload -U add-zsh-hook
 load-nvmrc() {
+  if ! command -v nvm >/dev/null 2>&1; then
+    return
+  fi
+
   local node_version="$(nvm version)"
   local nvmrc_path="$(nvm_find_nvmrc)"
 
@@ -74,7 +89,7 @@ load-nvmrc() {
   fi
 }
 add-zsh-hook chpwd load-nvmrc
-load-nvmrc
+command -v nvm >/dev/null 2>&1 && load-nvmrc
 
 export NODE_OPTIONS="--max-old-space-size=12000"
 
