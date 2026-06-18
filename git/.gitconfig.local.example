@@ -1,0 +1,7 @@
+# Machine-specific git configuration
+# Copy this file to ~/.gitconfig.local and fill in values for the current machine.
+
+[user]
+  name = Albert Hassey
+  email = albert.hassey@useparagon.com
+  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKbSWyjBkWJtf2T5IKgeZzf5Mj5734cPPZGDCry0DA02

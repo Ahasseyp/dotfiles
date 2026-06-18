@@ -1,0 +1,43 @@
+[init]
+  defaultBranch = main
+
+[gpg]
+  format = ssh
+
+[gpg "ssh"]
+  program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
+
+[commit]
+  gpgsign = true
+
+[includeIf "gitdir:~/Documents/personal/"]
+  path = ~/Documents/personal/.gitconfig
+
+[includeIf "gitdir:~/Documents/playgrounds/next/"]
+  path = ~/Documents/personal/.gitconfig
+
+[includeIf "gitdir:~/.config/nvim/"]
+  path = ~/Documents/personal/.gitconfig
+
+[push]
+  autoSetupRemote = true
+
+[pull]
+  rebase = false
+
+[filter "lfs"]
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
+
+[credential "https://github.com"]
+  helper =
+  helper = !/opt/homebrew/bin/gh auth git-credential
+
+[credential "https://gist.github.com"]
+  helper =
+  helper = !/opt/homebrew/bin/gh auth git-credential
+
+[include]
+  path = ~/.gitconfig.local
