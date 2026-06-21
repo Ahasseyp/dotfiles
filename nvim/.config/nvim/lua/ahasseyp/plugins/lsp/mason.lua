@@ -35,6 +35,7 @@ return {
 				"lua_ls",
 				"prismals",
 				"tailwindcss",
+				"ts_ls",
 			},
 		})
 

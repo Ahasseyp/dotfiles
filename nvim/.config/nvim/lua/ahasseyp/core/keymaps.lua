@@ -63,6 +63,9 @@ keymap.set("n", "<leader>y", '"+y')
 keymap.set("n", "<leader>y", '"+y')
 keymap.set("n", "<leader>Y", '"+Y')
 
+keymap.set("n", "<leader>cp", ':let @+ = expand("%")<CR>', { desc = "Copy relative path" })
+keymap.set("n", "<leader>cP", ':let @+ = expand("%:p")<CR>', { desc = "Copy absolute path" })
+
 keymap.set("n", "<leader>sw", [[:%s/\<<C-r><C-w>\>//gI<Left><Left><Left>]], { desc = "Subsitute word under cursor" })
 
 -- tailwind
