@@ -56,7 +56,7 @@ return {
 				folder_closed = "", -- Nerd Font folder icon (customize as needed)
 				folder_open = "", -- Nerd Font folder-open icon
 			},
-			view_mode = "list", -- "list" or "tree"
+			view_mode = "tree", -- "list" or "tree"
 			flatten_dirs = true, -- Flatten single-child directory chains in tree view
 			file_filter = {
 				ignore = { ".git/**", ".jj/**" }, -- Glob patterns to hide (e.g., {"*.lock", "dist/*"})
