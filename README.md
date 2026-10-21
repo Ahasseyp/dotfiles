@@ -9,6 +9,7 @@ Cross-machine macOS terminal configuration managed with GNU Stow.
 - Git
 - OpenSSH
 - iTerm2 (Dynamic Profiles)
+- Agent skills (`~/.agents/skills`)
 - Homebrew (Brewfile)
 
 ## Secrets policy
