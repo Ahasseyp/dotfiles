@@ -19,7 +19,6 @@ Personal Neovim config built on [lazy.nvim](https://github.com/folke/lazy.nvim),
 
 - `lazygit` CLI — for `lazygit.nvim`
 - `pyenv` + Python 3 — `options.lua` points `python3_host_prog` at `$HOME/.pyenv/shims/python`
-- `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY` — for `avante.nvim`
 
 ## Installation
 

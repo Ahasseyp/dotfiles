@@ -27,6 +27,15 @@ return {
 					},
 				},
 			},
+			pickers = {
+				find_files = {
+					find_command = {
+						"sh",
+						"-c",
+						"{ rg --files; [ -d .scratch ] && rg --files --hidden --no-ignore .scratch; [ -d docs ] && rg --files --no-ignore docs; } | awk '!seen[$0]++'",
+					},
+				},
+			},
 		})
 
 		telescope.load_extension("fzf")
