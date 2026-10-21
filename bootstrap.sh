@@ -3,7 +3,7 @@
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PACKAGES=(zsh git ssh nvim iterm2)
+PACKAGES=(zsh git ssh nvim iterm2 agents)
 BIN_DIR="${HOME}/.local/bin"
 SKIPPED_PACKAGES=()
 

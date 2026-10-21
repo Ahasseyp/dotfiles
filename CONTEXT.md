@@ -10,7 +10,7 @@ _Avoid_: config repo, settings backup.
 
 **Managed tool**:
 A command-line or terminal-facing program whose configuration lives in this repository and is deployed to `~` during install.
-_Examples_: Zsh, Neovim, OpenSSH, iTerm2, OhMyZsh.
+_Examples_: Zsh, Neovim, OpenSSH, iTerm2, OhMyZsh, agent skills.
 
 **Stow package**:
 A top-level directory whose internal structure mirrors the home directory and is deployed with GNU Stow.
